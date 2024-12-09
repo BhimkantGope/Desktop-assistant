@@ -1,0 +1,127 @@
+# packeges  #unofficial python binary search on google for search packeg.
+import speech_recognition as sr
+import pyttsx3
+import pywhatkit
+import datetime
+import wikipedia
+import webbrowser
+import openai
+import pyjokes
+import os  #jo input karenge bo kar dikhayega.
+
+# import os
+# import openai
+
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+# openai.Image.create(
+#   prompt="A cute baby sea otter",
+#   n=2,
+#   size="1024x1024"
+# )
+
+# Initialize speech recognition and text-to-speech engine
+listener = sr.Recognizer()
+engine = pyttsx3.init()
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[0].id)
+
+def talk(text):
+    """Convert text to speech."""
+    engine.say(text)
+    engine.runAndWait()
+
+def wish_me():
+    """Greet the user based on the time of day."""
+    hour = int(datetime.datetime.now().hour)
+    if hour < 12:
+        talk("Good Morning")
+    elif hour < 18:
+        talk("Good Afternoon!")
+    else:
+        talk("Good Evening!")
+    talk("I am Alexa, what can I help you?")
+
+def take_command():
+    # import speech_recognition as sr
+    # r = sr.Recognizer()
+    # with sr.Microphone() as source:
+    #     print('Say Something')
+    #     audio = r.listen(source)
+    #     voice_data = r.record(audio)
+    #     print(voice_data)
+    """Listen for a command and return it."""
+    command = ""
+    try:
+        with sr.Microphone() as source:
+            print('Listening...')
+            listener.pause_threshold = 1
+            voice = listener.listen(source)
+            command = listener.recognize_google(voice).lower()  #, language="en-in"
+            if 'alexa' in command:
+                command = command.replace('alexa', '').strip()
+                print(command)
+    except sr.UnknownValueError:
+        talk("Sorry, I didn't catch that. Please say it again.")
+        return ""
+    except sr.RequestError:
+        talk("It seems there is an issue with the internet connection.")
+        return ""
+
+def run_alexa():
+    """Process the command and respond accordingly."""
+    command = take_command()
+    sites = [["youtube", "https://www.youtube.com"], ["google", "https://www.google.com"], ["wikipedia", "https://www.wikipedia.com"], ["linkedin", "https://www.linkedin.com"], ["github", "https://www.github.com"]]
+    for site in sites:
+        if f"open {site[0]}".lower() in command.lower():
+
+            talk(f"Opening {site[0]} sir...")
+            webbrowser.open(site[1])
+    
+    if "exit" in command or "stop" in command:
+        talk("Goodbye!")
+        break
+    
+    if 'play' in command:
+        song = command.replace('play', '').strip()
+        talk('Playing ' + song)
+        pywhatkit.playonyt(song)
+    elif 'the time' in command:
+        current_time = datetime.datetime.now().strftime('%I:%M %p')
+        talk("Current time is " + current_time)
+    elif 'who the heck is' in command:
+        person = command.replace('who the heck is', '').strip()
+        info = wikipedia.summary(person, sentences=1)
+        print(info)
+        talk(info)
+    elif 'date with' in command:
+        talk('Sorry, I have a headache.')
+    elif 'are you single' in command:
+        talk('I am in a relationship with Bhimkant.')
+    elif 'joke' in command:
+        talk(pyjokes.get_joke())
+    elif 'chrome' in command:
+        os.system("start chrome")
+        talk("Chrome has been opened.")
+    elif 'notepad' in command:
+        os.system("notepad")
+        talk("Notepad has been opened.")
+    elif "open music" in command:
+        musicPath = "c:/Users/BHIMKANTGOPE/Downloads/dragons-198055.mp3"
+        if os.path.exists(musicPath):
+            os.startfile(musicPath)
+        else:
+            talk("Music file not found.")
+                # OR
+        # os.system(f"open {musicPath}")
+        # talk("Music has been opened.")
+    elif "open cmd" in command:
+        os.system("start cmd")
+    else:
+        talk("I am sorry, I didn't understand that. Could you try again?")
+        print(f"Unhandled command: {command}")
+
+
+# Main execution loop
+wish_me()
+while True:
+    run_alexa()
